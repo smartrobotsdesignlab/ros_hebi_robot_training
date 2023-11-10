@@ -1,8 +1,0 @@
-prefix=/home/parallels/hebi_ws/src/ros_hebi_robot_training/build/devel
-
-Name: ros_hebi_robot_training
-Description: Description of ros_hebi_robot_training
-Version: 0.0.0
-Cflags: -I/home/parallels/hebi_ws/src/ros_hebi_robot_training/build/devel/include
-Libs: -L${prefix}/lib 
-Requires: roscpp rospy std_msgs geometry_msgs message_runtime

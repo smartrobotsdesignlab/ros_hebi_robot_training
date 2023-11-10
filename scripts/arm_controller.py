@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from sensor_msgs.msg import JointState
@@ -20,7 +20,7 @@ class ArmController:
         self.gotopos_service = rospy.Service('go_to_position', GoToPos, self.handle_go_to_pos)
 
         # Set the flag to control real arm or just simulate
-        self.real_arm = rospy.get_param('/real_arm', False)
+        self.real_arm = rospy.get_param('/real_arm', True)
         self.t = rospy.get_time()
         self.group = None
         self.command = None
@@ -33,7 +33,7 @@ class ArmController:
             self.setup_motors()
 
         self.get_robot_feedback()
-        self.all_zero()
+        self.initial_pose()
 
     def handle_go_to_pos(self,req):
         rospy.loginfo(req.position)
@@ -42,7 +42,7 @@ class ArmController:
         else:
             rospy.loginfo("Robot must be on IDLE state before moving")
         return GoToPosResponse()
-
+    
     def setup_motors(self):
         lookup = hebi.Lookup()
         sleep(2)
@@ -72,14 +72,14 @@ class ArmController:
             self.command.position = np.array([angles[0], angles[1], -angles[2]])
             self.group.send_command(self.command)
 
-    def all_zero(self):
-        self.go_to_angle_setup(np.array([0, math.pi/4, -math.pi/2]), 3.0)
+    def initial_pose(self):
+        self.go_to_angle_setup(np.array([0, math.pi/2, 0]), 3.0)
 
     def go_to_angle_setup(self, end_angles, dur):
         rospy.loginfo("Go to Angle Started "+str(end_angles))
         self.traj_start_angle = np.array(self.curAngle)
         self.traj_end_angle = end_angles
-        self.traj_start_time = self.t +1
+        self.traj_start_time = self.t +3.0
         self.traj_duration = dur
         self.robot_fsm_state = "GO_TO_ANGLE"
 
@@ -90,9 +90,11 @@ class ArmController:
             self.desAngle[0] = self.traj_start_angle[0] + (self.traj_end_angle[0] - self.traj_start_angle[0])*(self.t-self.traj_start_time)/ self.traj_duration
             self.desAngle[1] = self.traj_start_angle[1] + (self.traj_end_angle[1] - self.traj_start_angle[1])*(self.t-self.traj_start_time)/ self.traj_duration
             self.desAngle[2] = self.traj_start_angle[2] + (self.traj_end_angle[2] - self.traj_start_angle[2])*(self.t-self.traj_start_time)/ self.traj_duration
+            
         elif self.t > self.traj_start_time + self.traj_duration:
             rospy.loginfo("Go to angle Ended")
             self.robot_fsm_state = "IDLE"
+            
 
     def get_robot_feedback(self):
         if self.real_arm:

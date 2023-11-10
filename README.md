@@ -34,4 +34,13 @@ cd ~/<workspace_name>/
 catkin_make
 ```
 
+Then you'll be able to run the Robot URDF with sliders controllers using 
 
+```
+roslaunch ros_hebi_robot_training arm_training_slider.launch
+```
+or the basic code we'll be editing, which is located in `ros_hebi_robot_training/src/scripts` using
+
+```
+roslaunch ros_hebi_robot_training arm_training_controller.launch
+```
